@@ -6,10 +6,6 @@
 #include <array>
 #include <Windows.h>
 
-#include <fstream>
-
-std::ofstream logger("hitboxes.log");
-
 constexpr auto AHUD_PostRender_index = 214;
 
 // Actually AREDHUD_Battle
@@ -50,11 +46,6 @@ void draw_rect(
 		if (pos.Y > max.Y)
 			max.Y = pos.Y;
 	}
-
-	logger << "min " << min.X << " " << min.Y << std::endl;
-	logger << "max " << max.X << " " << max.Y << std::endl;
-	const auto size = max - min;
-	logger << "size " << size.X << " " << size.Y << std::endl;
 
 	canvas->K2_DrawTexture(
 		nullptr,
@@ -105,8 +96,7 @@ void draw_pushbox(UCanvas *canvas, const asw_entity *entity)
 	int left, top, right, bottom;
 	entity->get_pushbox(&left, &top, &right, &bottom);
 
-	std::array<FVector2D, 4> corners =
-	{
+	std::array<FVector2D, 4> corners = {
 		FVector2D(left, top),
 		FVector2D(right, top),
 		FVector2D(right, bottom),
