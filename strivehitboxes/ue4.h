@@ -30,7 +30,7 @@ struct FVector2D
 	{
 		const auto ca = cosf(angle);
 		const auto sa = sinf(angle);
-		return FVector2D(X * ca + Y * -sa, X * -sa + Y * -ca);
+		return FVector2D(X * ca + Y * -sa, X * sa + Y * ca);
 	}
 
 	FVector2D operator+(const FVector2D &other) const
