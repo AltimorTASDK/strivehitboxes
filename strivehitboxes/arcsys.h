@@ -82,7 +82,8 @@ public:
 	FIELD(0xFC, int, hurtbox_count);
 	FIELD(0x100, int, hitbox_count);
 	FIELD(0x198, int, cinematic_flags);
-	FIELD(0x2F8, asw_entity*, owner);
+	FIELD(0x2C8, asw_entity*, parent);
+	FIELD(0x308, asw_entity*, attached);
 	FIELD(0x380, int, action_flags1);
 	FIELD(0x384, int, action_flags2);
 	FIELD(0x394, direction, facing);

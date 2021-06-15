@@ -26,7 +26,7 @@ struct FVector2D
 	FVector2D(float X, float Y) : X(X), Y(Y) {}
 	FVector2D(int X, int Y) : X((float)X), Y((float)Y) {}
 
-	FVector2D Rotate(const float angle)
+	FVector2D Rotate(const float angle) const
 	{
 		const auto ca = cosf(angle);
 		const auto sa = sinf(angle);
@@ -41,6 +41,16 @@ struct FVector2D
 	FVector2D operator-(const FVector2D &other) const
 	{
 		return FVector2D(X - other.X, Y - other.Y);
+	}
+
+	FVector2D operator*(float scalar) const
+	{
+		return FVector2D(X * scalar, Y * scalar);
+	}
+
+	FVector2D operator/(float scalar) const
+	{
+		return FVector2D(X / scalar, Y / scalar);
 	}
 };
 
@@ -59,6 +69,16 @@ struct FVector
 	FVector operator-(const FVector &other) const
 	{
 		return FVector(X - other.X, Y - other.Y, Z - other.Z);
+	}
+
+	FVector operator*(float scalar) const
+	{
+		return FVector(X * scalar, Y * scalar, Z * scalar);
+	}
+
+	FVector operator/(float scalar) const
+	{
+		return FVector(X / scalar, Y / scalar, Z / scalar);
 	}
 };
 
