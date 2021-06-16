@@ -27,65 +27,56 @@ void asw_coords_to_screen(UCanvas *canvas, FVector2D *pos)
 	*pos = FVector2D(proj.X, proj.Y);
 }
 
+// Corners must be in CW or CCW order
 void draw_rect(
 	UCanvas *canvas,
-	const std::array<FVector2D, 2> &corners,
-	const FLinearColor &color,
-	float rotation)
+	const std::array<FVector2D, 4> &corners,
+	const FLinearColor &color)
 {
-	FVector2D min, max;
-
-	if (corners[0].X < corners[1].X) {
-		min.X = corners[0].X;
-		max.X = corners[1].X;
-	}
-
-	if (corners[0].Y < corners[1].Y) {
-		min.Y = corners[0].Y;
-		max.Y = corners[1].Y;
-	}
-
-	const auto center = (min + max) / 2;
-
-	std::array<FVector2D, 4> points = {
-		FVector2D(max.X, max.Y),
-		FVector2D(min.X, max.Y),
-		FVector2D(min.X, min.Y),
-		FVector2D(max.X, min.Y)
-	};
-
-	if (rotation != 0.f) {
-		for (auto &pos : points)
-			pos = (pos - center).Rotate(rotation) + center;
-	}
-
 	for (auto i = 0; i < 4; i++)
-		canvas->K2_DrawLine(points[i], points[(i + 1) % 4], 2.F, color);
+		canvas->K2_DrawLine(corners[i], corners[(i + 1) % 4], 2.F, color);
 
-	canvas->K2_DrawTexture(
-		nullptr,
-		min,
-		max - min,
-		FVector2D(),
-		FVector2D(1.f, 1.f),
-		color,
-		BLEND_Translucent,
-		rotation);
+	// Fill in rectangle
+	FCanvasUVTri triangles[2];
+	triangles[0].V0_Color = triangles[0].V1_Color = triangles[0].V2_Color = color;
+	triangles[1].V0_Color = triangles[1].V1_Color = triangles[1].V2_Color = color;
+
+	triangles[0].V0_Pos = corners[0];
+	triangles[0].V1_Pos = corners[1];
+	triangles[0].V2_Pos = corners[2];
+
+	triangles[1].V0_Pos = corners[2];
+	triangles[1].V1_Pos = corners[3];
+	triangles[1].V2_Pos = corners[0];
+
+	FCanvasTriangleItem item(
+		FVector2D(0.f, 0.f),
+		FVector2D(0.f, 0.f),
+		FVector2D(0.f, 0.f),
+		*GWhiteTexture);
+
+	item.TriangleList = TArray(triangles);
+	item.BlendMode = SE_BLEND_Translucent;
+	item.Draw(canvas->Canvas);
 }
 
 void draw_hitbox(UCanvas *canvas, const asw_entity *entity, const hitbox &box)
 {
-	std::array<FVector2D, 2> corners = {
+	std::array<FVector2D, 4> corners = {
 		FVector2D(box.x, box.y),
-		FVector2D(box.x + box.w, box.y + box.h)
+		FVector2D(box.x + box.w, box.y),
+		FVector2D(box.x + box.w, box.y + box.h),
+		FVector2D(box.x, box.y + box.h)
 	};
 
 	for (auto &pos : corners) {
-		pos.X *= entity->scale_x;
-		pos.Y *= entity->scale_y;
+		pos.X *= -entity->scale_x;
+		pos.Y *= -entity->scale_y;
 
-		if (entity->facing == direction::right)
-			pos.X *= -1.F;
+		pos = pos.Rotate((float)entity->angle_x * (float)M_PI / 180000.f);
+
+		if (entity->facing == direction::left)
+			pos.X *= -1.f;
 
 		pos.X += entity->get_pos_x();
 		pos.Y += entity->get_pos_y();
@@ -101,11 +92,10 @@ void draw_hitbox(UCanvas *canvas, const asw_entity *entity, const hitbox &box)
 	else
 		color = FLinearColor(0.f, 1.f, 0.f, .1f);
 
-	const auto rotation = (float)entity->angle_x / 1000.f;
 	if (entity->facing == direction::right)
-		draw_rect(canvas, corners, color, -rotation);
+		draw_rect(canvas, corners, color);
 	else
-		draw_rect(canvas, corners, color, rotation);
+		draw_rect(canvas, corners, color);
 }
 
 void draw_pushbox(UCanvas *canvas, const asw_entity *entity)
@@ -113,15 +103,17 @@ void draw_pushbox(UCanvas *canvas, const asw_entity *entity)
 	int left, top, right, bottom;
 	entity->get_pushbox(&left, &top, &right, &bottom);
 
-	std::array<FVector2D, 2> corners = {
+	std::array<FVector2D, 4> corners = {
 		FVector2D(left, top),
-		FVector2D(right, bottom)
+		FVector2D(right, top),
+		FVector2D(right, bottom),
+		FVector2D(left, bottom)
 	};
 
 	for (auto &pos : corners)
 		asw_coords_to_screen(canvas, &pos);
 
-	draw_rect(canvas, corners, FLinearColor(1.f, 1.f, 0.f, .1f), 0.f);
+	draw_rect(canvas, corners, FLinearColor(1.f, 1.f, 0.f, .1f));
 }
 
 void draw_hitboxes(UCanvas *canvas, const asw_entity *entity)
@@ -148,6 +140,9 @@ void draw_display(UCanvas *canvas)
 {
 	const auto *engine = asw_engine::get();
 	if (engine == nullptr)
+		return;
+
+	if (canvas->Canvas == nullptr)
 		return;
 
 	// Loop through entities backwards because the player that most

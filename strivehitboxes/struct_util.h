@@ -1,20 +1,27 @@
 #pragma once
 
-#define FIELD(offset, type, name) \
-	void set_##offset(type value) \
+#include <type_traits>
+
+#define FIELD(OFFSET, TYPE, NAME) \
+	void set_##OFFSET(std::add_const<TYPE&>::type value) \
 	{ \
-		*(type*)((char*)this + offset) = value; \
+		*(TYPE*)((char*)this + OFFSET) = value; \
 	} \
 	\
-	type &get_##offset() const \
+	void set_##OFFSET(TYPE &&value) \
 	{ \
-		return *(type*)((char*)this + offset); \
+		*(TYPE*)((char*)this + OFFSET) = std::move(value); \
 	} \
-	__declspec(property(get = get_##offset, put=set_##offset)) type name
+	\
+	TYPE &get_##OFFSET() const \
+	{ \
+		return *(TYPE*)((char*)this + OFFSET); \
+	} \
+	__declspec(property(get = get_##OFFSET, put=set_##OFFSET)) TYPE NAME
 
-#define ARRAY_FIELD(offset, type, name) \
-	type *get_##offset() const \
+#define ARRAY_FIELD(OFFSET, TYPE, NAME) \
+	TYPE *get_##OFFSET() const \
 	{ \
-		return (type*)((char*)this + offset); \
+		return (TYPE*)((char*)this + OFFSET); \
 	} \
-	__declspec(property(get = get_##offset)) type *name
+	__declspec(property(get = get_##OFFSET)) TYPE *NAME
