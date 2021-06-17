@@ -116,12 +116,9 @@ void draw_pushbox(UCanvas *canvas, const asw_entity *entity)
 	draw_rect(canvas, corners, FLinearColor(1.f, 1.f, 0.f, .1f));
 }
 
-void draw_hitboxes(UCanvas *canvas, const asw_entity *entity)
+void draw_hitboxes(UCanvas *canvas, const asw_entity *entity, bool active)
 {
 	const auto count = entity->hitbox_count + entity->hurtbox_count;
-	const auto *parent = entity->parent != nullptr ? entity->parent : entity;
-	const auto active = parent->is_active();
-	const auto invuln = entity->is_invuln();
 
 	for (auto boxidx = 0; boxidx < count; boxidx++) {
 		const auto &box = entity->hitboxes[boxidx];
@@ -129,7 +126,7 @@ void draw_hitboxes(UCanvas *canvas, const asw_entity *entity)
 		// Don't show inactive hitboxes
 		if (box.type == hitbox::type::hit && !active)
 			continue;
-		else if (box.type == hitbox::type::hurt && invuln)
+		else if (box.type == hitbox::type::hurt && entity->is_invuln())
 			continue;
 
 		draw_hitbox(canvas, entity, box);
@@ -153,7 +150,14 @@ void draw_display(UCanvas *canvas)
 		if (entity->is_pushbox_active())
 			draw_pushbox(canvas, entity);
 
-		draw_hitboxes(canvas, entity);
+		const auto active = entity->is_active();
+		draw_hitboxes(canvas, entity, active);
+
+		const auto *attached = entity->attached;
+		while (attached != nullptr) {
+			draw_hitboxes(canvas, attached, active);
+			attached = attached->attached;
+		}
 	}
 }
 

@@ -27,6 +27,9 @@
     <ClCompile Include="arcsys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="bbscript.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sigscan.h">
@@ -39,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ue4.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bbscript.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -78,6 +78,7 @@ namespace cinematic_flag {
 
 class asw_entity {
 public:
+	FIELD(0x18, bool, is_player);
 	FIELD(0x68, hitbox*, hitboxes);
 	FIELD(0xFC, int, hurtbox_count);
 	FIELD(0x100, int, hitbox_count);
@@ -86,6 +87,7 @@ public:
 	FIELD(0x308, asw_entity*, attached);
 	FIELD(0x380, int, action_flags1);
 	FIELD(0x384, int, action_flags2);
+	FIELD(0x388, int, action_flags3);
 	FIELD(0x394, direction, facing);
 	FIELD(0x398, int, pos_x);
 	FIELD(0x39C, int, pos_y);

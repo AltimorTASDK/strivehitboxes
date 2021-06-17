@@ -87,7 +87,7 @@ bool asw_entity::is_active() const
 	if (cinematic_flags & cinematic_flag::counter)
 		return true;
 
-	return asw_entity_is_active(this, false);
+	return asw_entity_is_active(this, !is_player);
 }
 
 bool asw_entity::is_pushbox_active() const

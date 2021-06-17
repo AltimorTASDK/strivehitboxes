@@ -10,7 +10,7 @@
 
 const auto *exe = "GGST-Win64-Shipping.exe";
 const auto *dll = "strivehitboxes.dll";
-const auto *version = "v1.1";
+const auto *version = "v1.1.1";
 
 bool elevate_privileges()
 {
