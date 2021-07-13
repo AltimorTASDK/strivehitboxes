@@ -36,12 +36,12 @@ public:
 
 class hitbox {
 public:
-	enum class type : int {
+	enum class box_type : int {
 		hurt = 0,
 		hit = 1
 	};
 
-	type type;
+	box_type type;
 	float x, y;
 	float w, h;
 };

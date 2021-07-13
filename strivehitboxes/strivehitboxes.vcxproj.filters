@@ -30,6 +30,9 @@
     <ClCompile Include="bbscript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="math_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sigscan.h">
@@ -45,6 +48,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bbscript.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

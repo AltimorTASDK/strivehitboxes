@@ -68,6 +68,16 @@ struct FVector2D {
 		return FVector2D(X * ca + Y * -sa, X * sa + Y * ca);
 	}
 
+	float SizeSquared() const
+	{
+		return X * X + Y * Y;
+	}
+
+	float Size() const
+	{
+		return sqrt(SizeSquared());
+	}
+
 	FVector2D operator+(const FVector2D &other) const
 	{
 		return FVector2D(X + other.X, Y + other.Y);
@@ -94,6 +104,16 @@ struct FVector {
 
 	FVector() : X(0), Y(0), Z(0) {}
 	FVector(float X, float Y, float Z) : X(X), Y(Y), Z(Z) {}
+
+	float SizeSquared() const
+	{
+		return X * X + Y * Y + Z * Z;
+	}
+
+	float Size() const
+	{
+		return sqrt(SizeSquared());
+	}
 
 	FVector operator+(const FVector &other) const
 	{
