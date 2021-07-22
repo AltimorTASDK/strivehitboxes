@@ -11,6 +11,14 @@ public:
 	FIELD(0xB68, class asw_scene*, Scene);
 };
 
+class player_block {
+	char pad[0x160];
+public:
+	FIELD(0x8, class asw_entity*, entity);
+};
+
+static_assert(sizeof(player_block) == 0x160);
+
 // Used by the shared GG/BB/DBFZ engine code
 class asw_engine {
 public:
@@ -18,6 +26,7 @@ public:
 
 	static asw_engine *get();
 
+	ARRAY_FIELD(0x0, player_block, players);
 	FIELD(0x8A0, int, entity_count);
 	ARRAY_FIELD(0xC10, class asw_entity*, entities);
 };
@@ -38,7 +47,8 @@ class hitbox {
 public:
 	enum class box_type : int {
 		hurt = 0,
-		hit = 1
+		hit = 1,
+		grab = 2 // Not used by the game
 	};
 
 	box_type type;
@@ -59,7 +69,8 @@ namespace action_flag1 {
 
 namespace action_flag2 {
 	enum {
-		invuln = 16,
+		strike_invuln = 16,
+		throw_invuln = 32,
 		wakeup = 64
 	};
 }
@@ -79,10 +90,12 @@ namespace cinematic_flag {
 class asw_entity {
 public:
 	FIELD(0x18, bool, is_player);
+	FIELD(0x44, unsigned char, player_index);
 	FIELD(0x68, hitbox*, hitboxes);
 	FIELD(0xFC, int, hurtbox_count);
 	FIELD(0x100, int, hitbox_count);
 	FIELD(0x198, int, cinematic_flags);
+	FIELD(0x2B0, asw_entity*, last_combatted_entity);
 	FIELD(0x2C8, asw_entity*, parent);
 	FIELD(0x308, asw_entity*, attached);
 	FIELD(0x380, int, action_flags1);
@@ -102,21 +115,26 @@ public:
 	FIELD(0x4BC, int, vel_y);
 	FIELD(0x4C0, int, gravity);
 	FIELD(0x4EC, int, pushbox_front_offset);
+	FIELD(0x714, int, throw_box_top);
+	FIELD(0x71C, int, throw_box_bottom);
+	FIELD(0x720, int, throw_range);
 	FIELD(0x1104, int, backdash_invuln);
 	// bbscript
-	FIELD(0x11F8, int, sprite_frames);
-	FIELD(0x11FC, int, sprite_duration);
 	FIELD(0x11C0, char*, script_base);
 	FIELD(0x11C8, char*, next_script_cmd);
 	FIELD(0x11D0, char*, first_script_cmd);
+	FIELD(0x11F8, int, sprite_frames);
+	FIELD(0x11FC, int, sprite_duration);
 
 	bool is_active() const;
 	bool is_pushbox_active() const;
-	bool is_invuln() const;
+	bool is_strike_invuln() const;
+	bool is_throw_invuln() const;
 	int get_pos_x() const;
 	int get_pos_y() const;
 	int pushbox_width() const;
 	int pushbox_height() const;
 	int pushbox_bottom() const;
 	void get_pushbox(int *left, int *top, int *right, int *bottom) const;
+	asw_entity *get_opponent() const;
 };

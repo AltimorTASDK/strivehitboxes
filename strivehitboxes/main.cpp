@@ -48,7 +48,8 @@ struct drawn_hitbox {
 	// Clip outlines against another hitbox
 	void clip_lines(const drawn_hitbox &other)
 	{
-		const auto &&old_lines = std::move(lines);
+		auto old_lines = std::move(lines);
+		lines.clear();
 
 		for (auto &line : old_lines) {
 			float entry_fraction, exit_fraction;
@@ -75,7 +76,8 @@ struct drawn_hitbox {
 	// Clip filled rectangle against another hitbox
 	void clip_fill(const drawn_hitbox &other)
 	{
-		const auto &&old_fill = std::move(fill);
+		auto old_fill = std::move(fill);
+		fill.clear();
 
 		for (const auto &box : old_fill) {
 			const auto &box_min = box[0];
@@ -188,15 +190,22 @@ void draw_rect(
 }
 
 // Transform entity local space to screen space
-void transform_hitbox_point(const UCanvas *canvas, const asw_entity *entity, FVector2D *pos)
+void transform_hitbox_point(const UCanvas *canvas, const asw_entity *entity, FVector2D *pos, bool is_throw)
 {
-	pos->X *= -entity->scale_x;
-	pos->Y *= -entity->scale_y;
+	if (!is_throw) {
+		pos->X *= -entity->scale_x;
+		pos->Y *= -entity->scale_y;
 
-	*pos = pos->Rotate((float)entity->angle_x * (float)M_PI / 180000.f);
+		*pos = pos->Rotate((float)entity->angle_x * (float)M_PI / 180000.f);
 
-	if (entity->facing == direction::left)
-		pos->X *= -1.f;
+		if (entity->facing == direction::left)
+			pos->X *= -1.f;
+	} else {
+		// Throws hit on either side, so show it directed towards opponent
+		const auto *opponent = entity->get_opponent();
+		if (opponent != nullptr && entity->get_pos_x() > opponent->get_pos_x())
+			pos->X *= -1.f;
+	}
 
 	pos->X += entity->get_pos_x();
 	pos->Y += entity->get_pos_y();
@@ -209,14 +218,18 @@ void draw_hitbox(UCanvas *canvas, const asw_entity *entity, const drawn_hitbox &
 	FLinearColor color;
 	if (box.type == hitbox::box_type::hit)
 		color = FLinearColor(1.f, 0.f, 0.f, .25f);
+	else if (box.type == hitbox::box_type::grab)
+		color = FLinearColor(1.f, 0.f, 1.f, .25f);
 	else if (entity->action_flags1 & action_flag1::counterhit)
 		color = FLinearColor(0.f, 1.f, 1.f, .25f);
 	else
 		color = FLinearColor(0.f, 1.f, 0.f, .25f);
 
+	const auto is_throw = box.type == hitbox::box_type::grab;
+
 	for (auto fill : box.fill) {
 		for (auto &pos : fill)
-			transform_hitbox_point(canvas, entity, &pos);
+			transform_hitbox_point(canvas, entity, &pos, is_throw);
 
 		fill_rect(canvas, fill, color);
 	}
@@ -224,10 +237,32 @@ void draw_hitbox(UCanvas *canvas, const asw_entity *entity, const drawn_hitbox &
 	for (const auto &line : box.lines) {
 		auto start = line[0];
 		auto end = line[1];
-		transform_hitbox_point(canvas, entity, &start);
-		transform_hitbox_point(canvas, entity, &end);
+		transform_hitbox_point(canvas, entity, &start, is_throw);
+		transform_hitbox_point(canvas, entity, &end, is_throw);
 		canvas->K2_DrawLine(start, end, 2.F, color);
 	}
+}
+
+hitbox calc_throw_box(const asw_entity *entity)
+{
+	// Create a fake hitbox for throws to be displayed
+	hitbox box;
+	box.type = hitbox::box_type::grab;
+
+	const auto pushbox_front = entity->pushbox_width() / 2 + entity->pushbox_front_offset;
+	box.x = 0.f;
+	box.w = (float)(pushbox_front + entity->throw_range);
+
+	if (entity->throw_box_top <= entity->throw_box_bottom) {
+		// No throw height, use pushbox height for display
+		box.y = 0.f;
+		box.h = (float)entity->pushbox_height();
+		return box;
+	}
+
+	box.y = (float)entity->throw_box_bottom;
+	box.h = (float)(entity->throw_box_top - entity->throw_box_bottom);
+	return box;
 }
 
 void draw_hitboxes(UCanvas *canvas, const asw_entity *entity, bool active)
@@ -243,11 +278,15 @@ void draw_hitboxes(UCanvas *canvas, const asw_entity *entity, bool active)
 		// Don't show inactive hitboxes
 		if (box.type == hitbox::box_type::hit && !active)
 			continue;
-		else if (box.type == hitbox::box_type::hurt && entity->is_invuln())
+		else if (box.type == hitbox::box_type::hurt && entity->is_strike_invuln())
 			continue;
 
 		hitboxes.push_back(drawn_hitbox(box));
 	}
+
+	// Add throw hitbox if in use
+	if (entity->throw_range >= 0 && active)
+		hitboxes.push_back(calc_throw_box(entity));
 
 	for (auto i = 0; i < hitboxes.size(); i++) {
 		// Clip outlines
@@ -282,7 +321,14 @@ void draw_pushbox(UCanvas *canvas, const asw_entity *entity)
 	for (auto &pos : corners)
 		asw_coords_to_screen(canvas, &pos);
 
-	draw_rect(canvas, corners, FLinearColor(1.f, 1.f, 0.f, .1f));
+	// Show hollow pushbox when throw invuln
+	FLinearColor color;
+	if (entity->is_throw_invuln())
+		color = FLinearColor(1.f, 1.f, 0.f, 0.f);
+	else
+		color = FLinearColor(1.f, 1.f, 0.f, .2f);
+
+	draw_rect(canvas, corners, color);
 }
 
 void draw_display(UCanvas *canvas)

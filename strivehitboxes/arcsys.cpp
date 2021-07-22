@@ -25,15 +25,15 @@ using asw_entity_get_pos_y_t = int(*)(const asw_entity*);
 const auto asw_entity_get_pos_y = (asw_entity_get_pos_y_t)(
 	sigscan::get().scan("\x3D\x00\x08\x04\x00\x75\x18", "xxxxxxx") - 0x3D);
 
-using asw_entity_pushbox_width_t = bool(*)(const asw_entity*);
+using asw_entity_pushbox_width_t = int(*)(const asw_entity*);
 const auto asw_entity_pushbox_width = (asw_entity_pushbox_width_t)(
 	sigscan::get().scan("\x8B\x81\xE0\x04\x00\x00\x48\x8B\xD9\x85\xC0", "xxxxxxxxxxx") - 6);
 
-using asw_entity_pushbox_height_t = bool(*)(const asw_entity*);
+using asw_entity_pushbox_height_t = int(*)(const asw_entity*);
 const auto asw_entity_pushbox_height = (asw_entity_pushbox_height_t)(
 	sigscan::get().scan("\x8B\x81\xE4\x04\x00\x00\x48\x8B\xD9\x85\xC0", "xxxxxxxxxxx") - 6);
 
-using asw_entity_pushbox_bottom_t = bool(*)(const asw_entity*);
+using asw_entity_pushbox_bottom_t = int(*)(const asw_entity*);
 const auto asw_entity_pushbox_bottom = (asw_entity_pushbox_bottom_t)(
 	sigscan::get().scan("\x8B\x81\xE8\x04\x00\x00\x48\x8B\xD9\x3D\xFF", "xxxxxxxxxxx") - 6);
 
@@ -95,10 +95,17 @@ bool asw_entity::is_pushbox_active() const
 	return asw_entity_is_pushbox_active(this);
 }
 
-bool asw_entity::is_invuln() const
+bool asw_entity::is_strike_invuln() const
 {
 	return
-		(action_flags2 & (action_flag2::invuln | action_flag2::wakeup)) ||
+		(action_flags2 & (action_flag2::strike_invuln | action_flag2::wakeup)) ||
+		backdash_invuln > 0;
+}
+
+bool asw_entity::is_throw_invuln() const
+{
+	return
+		(action_flags2 & (action_flag2::throw_invuln | action_flag2::wakeup)) ||
 		backdash_invuln > 0;
 }
 
@@ -130,4 +137,16 @@ int asw_entity::pushbox_bottom() const
 void asw_entity::get_pushbox(int *left, int *top, int *right, int *bottom) const
 {
 	asw_entity_get_pushbox(this, left, top, right, bottom);
+}
+
+asw_entity *asw_entity::get_opponent() const
+{
+	const auto *engine = asw_engine::get();
+
+	for (auto i = 0; i < 2; i++) {
+		if (this == engine->players[i].entity)
+			return engine->players[1 - i].entity;
+	}
+
+	return nullptr;
 }
