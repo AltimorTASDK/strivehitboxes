@@ -138,8 +138,8 @@ struct drawn_hitbox {
 
 void asw_coords_to_screen(const UCanvas *canvas, FVector2D *pos)
 {
-	pos->X *= asw_engine::coord_scale / 1000.F;
-	pos->Y *= asw_engine::coord_scale / 1000.F;
+	pos->X *= asw_engine::COORD_SCALE / 1000.F;
+	pos->Y *= asw_engine::COORD_SCALE / 1000.F;
 
 	FVector pos3d(pos->X, 0.f, pos->Y);
 	asw_scene::get()->camera_transform(&pos3d, nullptr);
@@ -200,10 +200,9 @@ void transform_hitbox_point(const UCanvas *canvas, const asw_entity *entity, FVe
 
 		if (entity->facing == direction::left)
 			pos->X *= -1.f;
-	} else {
+	} else if (entity->opponent != nullptr) {
 		// Throws hit on either side, so show it directed towards opponent
-		const auto *opponent = entity->get_opponent();
-		if (opponent != nullptr && entity->get_pos_x() > opponent->get_pos_x())
+		if (entity->get_pos_x() > entity->opponent->get_pos_x())
 			pos->X *= -1.f;
 	}
 

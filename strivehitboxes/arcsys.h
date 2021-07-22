@@ -22,7 +22,7 @@ static_assert(sizeof(player_block) == 0x160);
 // Used by the shared GG/BB/DBFZ engine code
 class asw_engine {
 public:
-	static constexpr auto coord_scale = .458f;
+	static constexpr auto COORD_SCALE = .458f;
 
 	static asw_engine *get();
 
@@ -95,7 +95,7 @@ public:
 	FIELD(0xFC, int, hurtbox_count);
 	FIELD(0x100, int, hitbox_count);
 	FIELD(0x198, int, cinematic_flags);
-	FIELD(0x2B0, asw_entity*, last_combatted_entity);
+	FIELD(0x2B0, asw_entity*, opponent);
 	FIELD(0x2C8, asw_entity*, parent);
 	FIELD(0x308, asw_entity*, attached);
 	FIELD(0x380, int, action_flags1);
@@ -125,6 +125,7 @@ public:
 	FIELD(0x11D0, char*, first_script_cmd);
 	FIELD(0x11F8, int, sprite_frames);
 	FIELD(0x11FC, int, sprite_duration);
+	FIELD(0x1204, int, state_frames);
 
 	bool is_active() const;
 	bool is_pushbox_active() const;
@@ -136,5 +137,4 @@ public:
 	int pushbox_height() const;
 	int pushbox_bottom() const;
 	void get_pushbox(int *left, int *top, int *right, int *bottom) const;
-	asw_entity *get_opponent() const;
 };
