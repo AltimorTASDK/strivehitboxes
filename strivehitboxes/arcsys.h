@@ -26,9 +26,9 @@ public:
 
 	static asw_engine *get();
 
-	ARRAY_FIELD(0x0, player_block, players);
+	ARRAY_FIELD(0x0, player_block[2], players);
 	FIELD(0x8A0, int, entity_count);
-	ARRAY_FIELD(0xC10, class asw_entity*, entities);
+	ARRAY_FIELD(0xC10, class asw_entity*[110], entities);
 };
 
 
@@ -126,6 +126,7 @@ public:
 	FIELD(0x11F8, int, sprite_frames);
 	FIELD(0x11FC, int, sprite_duration);
 	FIELD(0x1204, int, state_frames);
+	ARRAY_FIELD(0x3628, char[32], state_name);
 
 	bool is_active() const;
 	bool is_pushbox_active() const;
