@@ -213,15 +213,17 @@ template<typename T>
 class instruction_dispatcher : public T {
 public:
 	template<typename ...args_type>
-	instruction_dispatcher(args_type &&...args) : T(std::forward(args)...)
+	instruction_dispatcher(args_type &&...args) : T(std::forward<args_type>(args)...)
 	{
 	}
 
 private:
+	using opcode_indices = std::make_index_sequence<(size_t)opcode::MAX>;
+
 	template<size_t ...I>
 	static constexpr auto create_handler_array_impl(std::index_sequence<I...>)
 	{
-		return std::array { &handle_instruction_void<(opcode)I>..., };
+		return std::array { &handle_instruction_void<(opcode)I>... };
 	}
 
 	template<typename indices = std::make_index_sequence<(size_t)opcode::MAX>>
