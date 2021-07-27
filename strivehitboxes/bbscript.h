@@ -213,7 +213,7 @@ template<typename T>
 class instruction_dispatcher : public T {
 public:
 	template<typename ...args_type>
-	instruction_dispatcher(args_type &&...args) : T(args...)
+	instruction_dispatcher(args_type &&...args) : T(std::forward(args)...)
 	{
 	}
 
