@@ -212,8 +212,7 @@ protected:
 template<typename T>
 class instruction_dispatcher : public T {
 public:
-	template<typename ...args_type>
-	instruction_dispatcher(args_type &&...args) : T(std::forward<args_type>(args)...)
+	instruction_dispatcher(auto &&...args) : T(std::forward<decltype(args)>(args)...)
 	{
 	}
 
@@ -236,7 +235,7 @@ private:
 	static constexpr auto handler_array =
 		[]<size_t ...I>(std::index_sequence<I...>)
 		{
-			return std::array{ &handle_instruction_void<(opcode)I>... };
+			return std::array { &handle_instruction_void<(opcode)I>... };
 		}(std::make_index_sequence<(size_t)opcode::MAX>());
 
 protected:
