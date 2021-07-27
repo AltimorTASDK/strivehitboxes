@@ -218,20 +218,6 @@ public:
 	}
 
 private:
-	using opcode_indices = std::make_index_sequence<(size_t)opcode::MAX>;
-
-	template<size_t ...I>
-	static constexpr auto create_handler_array_impl(std::index_sequence<I...>)
-	{
-		return std::array { &handle_instruction_void<(opcode)I>... };
-	}
-
-	template<typename indices = std::make_index_sequence<(size_t)opcode::MAX>>
-	static constexpr auto create_handler_array()
-	{
-		return create_handler_array_impl(indices());
-	}
-
 	template<opcode op, typename enable = void>
 	struct is_implemented { static constexpr auto value = false; };
 
@@ -247,7 +233,11 @@ private:
 			T::handle_instruction(*(const instruction<op>*)inst);
 	}
 
-	static constexpr auto handler_array = create_handler_array();
+	static constexpr auto handler_array =
+		[]<size_t ...I>(std::index_sequence<I...>)
+		{
+			return std::array{ &handle_instruction_void<(opcode)I>... };
+		}(std::make_index_sequence<(size_t)opcode::MAX>());
 
 protected:
 	void dispatch_instruction(opcode op, const void *inst) override
