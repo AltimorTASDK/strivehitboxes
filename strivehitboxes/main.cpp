@@ -219,7 +219,7 @@ void draw_hitbox(UCanvas *canvas, const asw_entity *entity, const drawn_hitbox &
 		color = FLinearColor(1.f, 0.f, 0.f, .25f);
 	else if (box.type == hitbox::box_type::grab)
 		color = FLinearColor(1.f, 0.f, 1.f, .25f);
-	else if (entity->action_flags1 & action_flag1::counterhit)
+	else if (entity->counterhit)
 		color = FLinearColor(0.f, 1.f, 1.f, .25f);
 	else
 		color = FLinearColor(0.f, 1.f, 0.f, .25f);

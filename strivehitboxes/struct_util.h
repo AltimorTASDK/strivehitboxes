@@ -41,3 +41,18 @@ constexpr auto array_elem_count = sizeof(std::declval<T>()) / sizeof(std::declva
 		return ((std::decay_t<TYPE>)((char*)this + OFFSET))[index]; \
 	} \
 	__declspec(property(get=get_##OFFSET, put=set_##OFFSET)) array_elem_type<TYPE> NAME[array_elem_count<TYPE>]
+
+#define BIT_FIELD(OFFSET, MASK, NAME) \
+	void set_##OFFSET_##MASK(bool value) \
+	{ \
+		if (value) \
+			*(int*)((char*)this + OFFSET) |= MASK; \
+		else \
+			*(int*)((char*)this + OFFSET) &= ~MASK; \
+	} \
+	\
+	bool get_##OFFSET_##MASK() const \
+	{ \
+		return (*(int*)((char*)this + OFFSET) & MASK) != 0; \
+	} \
+	__declspec(property(get=get_##OFFSET_##MASK, put=set_##OFFSET_##MASK)) bool NAME

@@ -2,6 +2,7 @@
 
 #include "ue4.h"
 #include "struct_util.h"
+#include "bbscript.h"
 
 class AREDGameState_Battle : public AGameState {
 public:
@@ -61,31 +62,15 @@ enum class direction : int {
 	left = 1
 };
 
-namespace action_flag1 {
-	enum {
-		counterhit = 256
-	};
-}
+class event_handler {
+	char pad[0x58];
 
-namespace action_flag2 {
-	enum {
-		strike_invuln = 16,
-		throw_invuln = 32,
-		wakeup = 64
-	};
-}
+public:
+	FIELD(0x0, bbscript::code_pointer, script);
+	FIELD(0x28, int, trigger_value);
+};
 
-namespace cinematic_flag {
-	enum {
-		//   _____    ____    _    _   _   _   _______   ______   _____  
-		//  / ____|  / __ \  | |  | | | \ | | |__   __| |  ____| |  __ \ 
-		// | |      | |  | | | |  | | |  \| |    | |    | |__    | |__) |
-		// | |      | |  | | | |  | | | . ` |    | |    |  __|   |  _  / 
-		// | |____  | |__| | | |__| | | |\  |    | |    | |____  | | \ \ 
-		//  \_____|  \____/   \____/  |_| \_|    |_|    |______| |_|  \_\ 
-		counter = 0x4000000
-	};
-}
+static_assert(sizeof(event_handler) == 0x58);
 
 class asw_entity {
 public:
@@ -94,13 +79,22 @@ public:
 	FIELD(0x68, hitbox*, hitboxes);
 	FIELD(0xFC, int, hurtbox_count);
 	FIELD(0x100, int, hitbox_count);
-	FIELD(0x198, int, cinematic_flags);
+	//   _____    ____    _    _   _   _   _______   ______   _____  
+	//  / ____|  / __ \  | |  | | | \ | | |__   __| |  ____| |  __ \ 
+	// | |      | |  | | | |  | | |  \| |    | |    | |__    | |__) |
+	// | |      | |  | | | |  | | | . ` |    | |    |  __|   |  _  / 
+	// | |____  | |__| | | |__| | | |\  |    | |    | |____  | | \ \ 
+	//  \_____|  \____/   \____/  |_| \_|    |_|    |______| |_|  \_\ 
+	BIT_FIELD(0x198, 0x4000000, cinematic_counter);
+	FIELD(0x1B0, int, state_frames);
 	FIELD(0x2B0, asw_entity*, opponent);
 	FIELD(0x2C8, asw_entity*, parent);
 	FIELD(0x308, asw_entity*, attached);
-	FIELD(0x380, int, action_flags1);
-	FIELD(0x384, int, action_flags2);
-	FIELD(0x388, int, action_flags3);
+	BIT_FIELD(0x380, 1, airborne);
+	BIT_FIELD(0x380, 256, counterhit);
+	BIT_FIELD(0x384, 16, strike_invuln);
+	BIT_FIELD(0x384, 32, throw_invuln);
+	BIT_FIELD(0x384, 64, wakeup);
 	FIELD(0x394, direction, facing);
 	FIELD(0x398, int, pos_x);
 	FIELD(0x39C, int, pos_y);
@@ -120,12 +114,14 @@ public:
 	FIELD(0x720, int, throw_range);
 	FIELD(0x1104, int, backdash_invuln);
 	// bbscript
-	FIELD(0x11C0, char*, script_base);
-	FIELD(0x11C8, char*, next_script_cmd);
-	FIELD(0x11D0, char*, first_script_cmd);
+	FIELD(0x1168, bbscript::event_bitmask, event_handler_bitmask);
+	FIELD(0x11C0, bbscript::code_pointer, script_base);
+	FIELD(0x11C8, bbscript::code_pointer, next_script_cmd);
+	FIELD(0x11D0, bbscript::code_pointer, first_script_cmd);
 	FIELD(0x11F8, int, sprite_frames);
-	FIELD(0x11FC, int, sprite_duration);
-	FIELD(0x1204, int, state_frames);
+	FIELD(0x1120, int, sprite_duration);
+	FIELD(0x1204, int, sprite_changes);
+	ARRAY_FIELD(0x12F0, event_handler[(size_t)bbscript::event_type::MAX], event_handlers);
 	ARRAY_FIELD(0x3628, char[32], state_name);
 
 	bool is_active() const;

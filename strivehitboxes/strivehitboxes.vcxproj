@@ -69,7 +69,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>CURL_STATICLIB;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -88,9 +88,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbscript.h" />
+    <ClInclude Include="bitmask.h" />
     <ClInclude Include="math_util.h" />
     <ClInclude Include="sigscan.h" />
     <ClInclude Include="arcsys.h" />
+    <ClInclude Include="simulation.h" />
     <ClInclude Include="struct_util.h" />
     <ClInclude Include="ue4.h" />
   </ItemGroup>

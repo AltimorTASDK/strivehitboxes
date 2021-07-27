@@ -84,10 +84,7 @@ void asw_scene::camera_transform(FVector *position, FVector *angle) const
 bool asw_entity::is_active() const
 {
 	// Otherwise returns false during COUNTER
-	if (cinematic_flags & cinematic_flag::counter)
-		return true;
-
-	return asw_entity_is_active(this, !is_player);
+	return cinematic_counter || asw_entity_is_active(this, !is_player);
 }
 
 bool asw_entity::is_pushbox_active() const
@@ -97,16 +94,12 @@ bool asw_entity::is_pushbox_active() const
 
 bool asw_entity::is_strike_invuln() const
 {
-	return
-		(action_flags2 & (action_flag2::strike_invuln | action_flag2::wakeup)) ||
-		backdash_invuln > 0;
+	return strike_invuln || wakeup || backdash_invuln > 0;
 }
 
 bool asw_entity::is_throw_invuln() const
 {
-	return
-		(action_flags2 & (action_flag2::throw_invuln | action_flag2::wakeup)) ||
-		backdash_invuln > 0;
+	return throw_invuln || wakeup || backdash_invuln > 0;
 }
 
 int asw_entity::get_pos_x() const
@@ -137,16 +130,4 @@ int asw_entity::pushbox_bottom() const
 void asw_entity::get_pushbox(int *left, int *top, int *right, int *bottom) const
 {
 	asw_entity_get_pushbox(this, left, top, right, bottom);
-}
-
-asw_entity *asw_entity::get_opponent() const
-{
-	const auto *engine = asw_engine::get();
-
-	for (auto i = 0; i < 2; i++) {
-		if (this == engine->players[i].entity)
-			return engine->players[1 - i].entity;
-	}
-
-	return nullptr;
 }

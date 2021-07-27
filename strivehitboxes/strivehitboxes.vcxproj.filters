@@ -53,5 +53,11 @@
     <ClInclude Include="math_util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="bitmask.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="simulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
