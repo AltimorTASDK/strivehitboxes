@@ -15,7 +15,7 @@ const auto asw_entity_is_active = (asw_entity_is_active_t)(
 
 using asw_entity_is_pushbox_active_t = bool(*)(const asw_entity*);
 const auto asw_entity_is_pushbox_active = (asw_entity_is_pushbox_active_t)(
-	sigscan::get().scan("\xF7\x80\xEC\x5C", "xxxx") - 0x1A);
+	sigscan::get().scan("\xF7\x80\xCC\x5D", "xxxx") - 0x1A);
 
 using asw_entity_get_pos_x_t = int(*)(const asw_entity*);
 const auto asw_entity_get_pos_x = (asw_entity_get_pos_x_t)(
